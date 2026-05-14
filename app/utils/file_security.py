@@ -363,7 +363,7 @@ def quarantine_file(file_path: Path, reason: str):
         quarantine_dir.mkdir(exist_ok=True)
         
         # Generate quarantine filename
-        timestamp = hashlib.md5(str(file_path).encode()).hexdigest()[:8]
+        timestamp = hashlib.sha256(str(file_path).encode()).hexdigest()[:8]
         quarantine_name = f"{timestamp}_{file_path.name}"
         quarantine_path = quarantine_dir / quarantine_name
         

@@ -1,13 +1,28 @@
 """
 Database optimization utilities for indexing and performance.
 """
-from sqlalchemy import text, Index
+from sqlalchemy import text, Index, String, cast, func, select
 from sqlalchemy.orm import Session
 from loguru import logger
 from typing import List, Dict, Any
 
 from ..database import engine
 from ..models import Document, Correspondent, Tag, DocType, User, AuditLog
+
+
+TABLES_BY_NAME = {
+    'documents': Document.__table__,
+    'correspondents': Correspondent.__table__,
+    'tags': Tag.__table__,
+    'doc_types': DocType.__table__,
+    'users': User.__table__,
+    'audit_logs': AuditLog.__table__,
+}
+
+
+def _count_table_rows(db: Session, table_name: str) -> int:
+    table = TABLES_BY_NAME[table_name]
+    return db.execute(select(func.count()).select_from(table)).scalar() or 0
 
 
 def create_indexes(db: Session) -> List[Dict[str, Any]]:
@@ -158,10 +173,8 @@ def analyze_database(db: Session) -> Dict[str, Any]:
     
     try:
         # Get table statistics
-        tables = ['documents', 'correspondents', 'tags', 'doc_types', 'users', 'audit_logs']
-        
-        for table in tables:
-            count = db.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
+        for table, table_obj in TABLES_BY_NAME.items():
+            count = db.execute(select(func.count()).select_from(table_obj)).scalar() or 0
             analysis['table_stats'].append({
                 'table': table,
                 'row_count': count
@@ -185,7 +198,7 @@ def analyze_database(db: Session) -> Dict[str, Any]:
                     })
         
         # Generate recommendations
-        doc_count = db.execute(text("SELECT COUNT(*) FROM documents")).scalar()
+        doc_count = _count_table_rows(db, 'documents')
         
         if doc_count > 10000:
             analysis['recommendations'].append({
@@ -259,10 +272,11 @@ def optimize_database(db: Session) -> Dict[str, Any]:
                 logger.info("PostgreSQL VACUUM ANALYZE completed")
                 
                 # REINDEX
-                tables = ['documents', 'users', 'audit_logs']
-                for table in tables:
+                preparer = engine.dialect.identifier_preparer
+                for table in ('documents', 'users', 'audit_logs'):
                     try:
-                        conn.execute(text(f"REINDEX TABLE {table}"))
+                        quoted_table = preparer.quote(table)
+                        conn.execute(text("REINDEX TABLE " + quoted_table))
                         logger.info(f"Reindexed table: {table}")
                     except Exception as e:
                         results['errors'].append(f"Failed to reindex {table}: {str(e)}")
@@ -297,12 +311,15 @@ def get_database_size() -> Dict[str, Any]:
                 
                 # Get table sizes (approximate)
                 with engine.connect() as conn:
-                    tables = ['documents', 'correspondents', 'tags', 'users', 'audit_logs']
                     size_info['tables'] = {}
                     
-                    for table in tables:
+                    for table in ('documents', 'correspondents', 'tags', 'users', 'audit_logs'):
+                        table_obj = TABLES_BY_NAME[table]
                         result = conn.execute(
-                            text(f"SELECT COUNT(*) as count, AVG(LENGTH(CAST(id AS TEXT))) as avg_size FROM {table}")
+                            select(
+                                func.count().label('count'),
+                                func.avg(func.length(cast(table_obj.c.id, String))).label('avg_size'),
+                            ).select_from(table_obj)
                         ).fetchone()
                         
                         if result:

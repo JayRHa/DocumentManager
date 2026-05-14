@@ -5,6 +5,7 @@ Provides command-line interface for the document management system
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -53,12 +54,13 @@ def serve():
     print(f"📁 Staging folder: {settings.staging_folder}")
     print(f"💾 Data folder: {settings.data_folder}")
     print(f"📄 Storage folder: {settings.storage_folder}")
+    host = os.getenv("DOCUMENT_MANAGER_HOST", "127.0.0.1")
     print("\n🔗 Access the system at: http://localhost:8000")
     print("📚 API documentation at: http://localhost:8000/docs")
     
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host=host,
         port=8000,
         reload=True,
         log_level="info"
