@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.orm import Session
+import os
 import uvicorn
 from pathlib import Path
 
@@ -272,4 +273,5 @@ async def catch_all(request: Request, path: str):
     )
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    host = os.getenv("DOCUMENT_MANAGER_HOST", "127.0.0.1")
+    uvicorn.run("app.main:app", host=host, port=8000, reload=True)
