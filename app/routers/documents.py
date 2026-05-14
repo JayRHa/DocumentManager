@@ -372,9 +372,13 @@ async def upload_document(
         # Save file with secure permissions
         with open(staging_path, "wb") as buffer:
             buffer.write(content)
-        
-        # Set secure file permissions
-        set_secure_permissions(staging_path, is_private=False)
+
+        # Set secure file permissions. Uploaded documents frequently contain
+        # sensitive personal data (invoices, contracts, tax documents, etc.).
+        # We default to owner-only (0600) instead of world-readable (0644) so
+        # that other local users on the host can't read uploaded documents
+        # by browsing the filesystem.
+        set_secure_permissions(staging_path, is_private=True)
         
         # Log upload event
         from ..services.audit_service import log_audit_event

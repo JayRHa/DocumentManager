@@ -46,14 +46,29 @@ def health_check(db: Session = Depends(get_db)):
         }
 
 @router.get("/debug/azure")
-def debug_azure_settings(db: Session = Depends(get_db)):
-    """Debug endpoint to check Azure settings"""
+def debug_azure_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+):
+    """Debug endpoint to check Azure settings (admin only).
+
+    Even though the Azure API key is masked, this endpoint dumps the full
+    Azure deployment configuration (endpoint, deployment names) and other
+    raw settings, so it must require admin authentication.
+    """
     settings = get_settings(db)
     db_settings = db.query(SettingsModel).filter(
-        SettingsModel.key.in_(['ai_provider', 'azure_openai_api_key', 'azure_openai_endpoint', 
+        SettingsModel.key.in_(['ai_provider', 'azure_openai_api_key', 'azure_openai_endpoint',
                                'azure_openai_chat_deployment', 'azure_openai_embeddings_deployment'])
     ).all()
-    
+
+    # Mask any sensitive values in db_settings as well so we don't leak the
+    # raw api key from the settings table even to admins via this endpoint.
+    sensitive_keys = {"azure_openai_api_key", "openai_api_key", "jwt_secret_key", "secret_key"}
+    masked_db_settings = {
+        s.key: ("***" if s.key in sensitive_keys and s.value else s.value)
+        for s in db_settings
+    }
     return {
         "loaded_settings": {
             "ai_provider": settings.ai_provider,
@@ -62,7 +77,7 @@ def debug_azure_settings(db: Session = Depends(get_db)):
             "azure_chat_deployment": settings.azure_openai_chat_deployment,
             "azure_embeddings_deployment": settings.azure_openai_embeddings_deployment
         },
-        "db_settings": {s.key: s.value for s in db_settings}
+        "db_settings": masked_db_settings,
     }
 
 
@@ -97,11 +112,18 @@ def get_all_settings(
     return settings
 
 @router.get("/setup-config")
-def get_setup_config(db: Session = Depends(get_db)):
-    """Get current configuration for setup wizard"""
+def get_setup_config(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+):
+    """Get current configuration for setup wizard (admin only).
+
+    This endpoint returns OpenAI and Azure OpenAI API keys in cleartext, so
+    it must require admin authentication.
+    """
     try:
         config = get_settings(db)
-        
+
         return {
             "ai_provider": config.ai_provider,
             "openai_api_key": config.openai_api_key if config.openai_api_key else "",
@@ -117,7 +139,7 @@ def get_setup_config(db: Session = Depends(get_db)):
             "storage_folder": config.storage_folder,
             "data_folder": config.data_folder
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -164,9 +186,16 @@ def save_configuration(
 @router.get("/extended")
 def get_extended_settings(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission_flexible("settings.read"))
+    current_user: User = Depends(require_admin_flexible),
 ) -> ExtendedSettingsResponse:
-    """Get all settings with additional computed values"""
+    """Get all settings with additional computed values (admin only).
+
+    Previously required only the ``settings.read`` permission, which the
+    default ``editor`` role grants. That meant any non-admin editor could
+    read the cleartext OpenAI/Azure API keys and the ``secret_key`` via
+    this endpoint. Restricted to admins to fix the privilege-escalation
+    path.
+    """
     try:
         config = get_settings(db)
         
@@ -255,8 +284,16 @@ def update_extended_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/ai-provider/status")
-def get_ai_provider_status(db: Session = Depends(get_db)) -> AIProviderStatus:
-    """Get current AI provider configuration and test connection"""
+def get_ai_provider_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+) -> AIProviderStatus:
+    """Get current AI provider configuration and test connection (admin only).
+
+    Discloses which AI provider is configured, deployment/model names, and
+    actively attempts an outbound API call. Restricted to admins to avoid
+    information disclosure and unauthenticated outbound traffic.
+    """
     try:
         config = get_settings(db)
         
@@ -531,9 +568,10 @@ def update_openai_config(
 @router.post("/config/ai-limits")
 def update_ai_limits(
     ai_limits: Dict[str, int],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ):
-    """Update AI service limits"""
+    """Update AI service limits (admin only)."""
     text_limit = ai_limits.get("text_limit")
     context_limit = ai_limits.get("context_limit")
     
@@ -554,9 +592,14 @@ def update_ai_limits(
 @router.post("/config/file-settings")
 def update_file_settings(
     file_settings: Dict[str, Any],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ):
-    """Update file handling settings"""
+    """Update file handling settings (admin only).
+
+    Changing upload size limits or allowed extensions affects the system's
+    security posture, so this is restricted to admins.
+    """
     max_size = file_settings.get("max_file_size")
     extensions = file_settings.get("allowed_extensions")
     
@@ -571,9 +614,15 @@ def update_file_settings(
 @router.post("/config/ocr-tools")
 def update_ocr_tools(
     ocr_tools: Dict[str, str],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ):
-    """Update OCR tool paths"""
+    """Update OCR tool paths (admin only).
+
+    These paths point at executables that the server invokes; allowing
+    unauthenticated callers to change them would be a remote-code-execution
+    primitive.
+    """
     tesseract_path = ocr_tools.get("tesseract_path")
     poppler_path = ocr_tools.get("poppler_path")
     
@@ -594,9 +643,14 @@ def update_ocr_tools(
 @router.post("/config/folders")
 def update_folder_paths(
     folders: Dict[str, str],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ):
-    """Update folder paths"""
+    """Update folder paths (admin only).
+
+    Storage/staging/data folders control where uploaded documents live;
+    changing them could be used to redirect writes or hijack stored files.
+    """
     updated = []
     
     for key in ["root_folder", "staging_folder", "storage_folder", "data_folder", "logs_folder"]:
@@ -612,28 +666,42 @@ def update_folder_paths(
     return {"message": f"Updated folders: {', '.join(updated)}", "updated": updated}
 
 @router.get("/export")
-def export_configuration(db: Session = Depends(get_db)) -> ExportConfigResponse:
-    """Export all configuration settings"""
+def export_configuration(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+) -> ExportConfigResponse:
+    """Export all configuration settings (admin only).
+
+    The settings table contains the OpenAI/Azure API keys and the JWT
+    secret in cleartext. Without admin authentication this endpoint
+    leaks every credential the application uses.
+    """
     try:
         # Get all settings from database
         db_settings = db.query(SettingsModel).all()
         settings_dict = {setting.key: setting.value for setting in db_settings}
-        
+
         return ExportConfigResponse(
             version="1.0",
             exported_at=datetime.now(),
             settings=settings_dict
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/import")
 async def import_configuration(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ) -> Dict[str, Any]:
-    """Import configuration from JSON file"""
+    """Import configuration from JSON file (admin only).
+
+    Without authentication, an anonymous attacker could overwrite every
+    setting (including API keys, JWT secret, admin-controlled paths) by
+    POSTing a crafted JSON payload.
+    """
     try:
         # Read and parse JSON file
         content = await file.read()
@@ -665,9 +733,14 @@ async def import_configuration(
 @router.post("/backup")
 async def backup_system(
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
 ) -> Dict[str, str]:
-    """Create a full system backup"""
+    """Create a full system backup (admin only).
+
+    The exported backup contains all configuration settings, including the
+    cleartext OpenAI/Azure API keys and the JWT secret.
+    """
     try:
         backup_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_dir = Path("data/backups") / backup_id
@@ -716,13 +789,37 @@ async def backup_system(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/backup/{backup_id}")
-def download_backup(backup_id: str):
-    """Download a backup file"""
-    zip_path = Path("data/backups") / f"backup_{backup_id}.zip"
-    
+def download_backup(
+    backup_id: str,
+    current_user: User = Depends(require_admin_flexible),
+):
+    """Download a backup file (admin only).
+
+    The backup archive contains every configuration setting (including
+    OpenAI/Azure keys and the JWT secret), so this must require admin
+    authentication. The backup_id is also validated to prevent path
+    traversal: the resolved path must stay inside data/backups, and the
+    id is constrained to a safe character set.
+    """
+    import re
+
+    # Restrict backup_id to a safe character set; the timestamp generator
+    # above only emits digits and underscores, so this is sufficient.
+    if not re.fullmatch(r"[A-Za-z0-9_\-]+", backup_id):
+        raise HTTPException(status_code=400, detail="Invalid backup id")
+
+    backups_base = Path("data/backups").resolve()
+    zip_path = (backups_base / f"backup_{backup_id}.zip").resolve()
+
+    # Ensure the resolved path stays inside the backups directory.
+    try:
+        zip_path.relative_to(backups_base)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid backup id")
+
     if not zip_path.exists():
         raise HTTPException(status_code=404, detail="Backup not found")
-    
+
     return FileResponse(
         path=zip_path,
         media_type="application/zip",
@@ -730,8 +827,14 @@ def download_backup(backup_id: str):
     )
 
 @router.get("/logs/download")
-def download_logs():
-    """Download all log files as a zip archive"""
+def download_logs(
+    current_user: User = Depends(require_admin_flexible),
+):
+    """Download all log files as a zip archive (admin only).
+
+    Logs typically include request paths, user identifiers, IP addresses
+    and error stack traces — all sensitive operational data.
+    """
     try:
         # Create a temporary directory for the zip file
         with tempfile.TemporaryDirectory() as temp_dir:

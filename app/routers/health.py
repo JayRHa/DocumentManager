@@ -11,6 +11,7 @@ from pathlib import Path
 from ..database import get_db
 from ..config import get_settings
 from ..models import Document, Correspondent, Tag, DocType, User, AuditLog
+from ..services.auth_service import require_admin_flexible
 
 router = APIRouter()
 
@@ -253,8 +254,16 @@ async def simple_health_check() -> Dict[str, str]:
 
 
 @router.get("/metrics")
-async def system_metrics(db: Session = Depends(get_db)) -> Dict[str, Any]:
-    """System performance and resource metrics"""
+async def system_metrics(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+) -> Dict[str, Any]:
+    """System performance and resource metrics (admin only).
+
+    Reveals CPU/RAM/disk usage, user counts, recent login counts and
+    process metadata. Anonymous callers should not be able to fingerprint
+    the host this way.
+    """
     try:
         # CPU metrics
         cpu_percent = psutil.cpu_percent(interval=1)
@@ -453,8 +462,16 @@ async def startup_check(db: Session = Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/security")
-async def security_status(db: Session = Depends(get_db)) -> Dict[str, Any]:
-    """Security-specific health checks"""
+async def security_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_flexible),
+) -> Dict[str, Any]:
+    """Security-specific health checks (admin only).
+
+    Exposes user counts, admin counts, recent failed/successful login
+    counts, and filesystem permission information that helps an attacker
+    enumerate the install. Restricted to admins.
+    """
     security_status = {}
     
     # Authentication status

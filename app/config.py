@@ -1,3 +1,5 @@
+import secrets
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, Any
 from sqlalchemy.orm import Session
@@ -50,7 +52,12 @@ class Settings(BaseSettings):
     allowed_extensions: str = "pdf,png,jpg,jpeg,tiff,bmp,txt,text"
     
     # Security
-    secret_key: str = "your-secret-key-change-in-production"
+    # Do NOT ship a static, well-known default secret_key. Anything signed
+    # with this key would be forgeable by anyone who has read the source.
+    # When unset, a per-process random key is generated; admins should
+    # configure a stable value via the database settings table (the
+    # DatabaseSettings loader will override this).
+    secret_key: str = secrets.token_urlsafe(32)
     jwt_secret_key: Optional[str] = None  # JWT secret key for authentication
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30

@@ -6,12 +6,38 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, Optional
 from pathlib import Path
 
+import re
+
 from ..database import get_db
 from ..models import User
 from ..services.auth_service import require_admin_flexible
 from ..services.backup_scheduler import backup_scheduler
 from ..utils.backup import restore_backup, list_backups
 from pydantic import BaseModel
+
+
+_BACKUP_DIR = Path("data/backups")
+_BACKUP_FILENAME_RE = re.compile(r"^[A-Za-z0-9._\-]+$")
+
+
+def _resolve_backup_path(backup_filename: str) -> Path:
+    """Resolve a user-supplied backup filename to a safe path.
+
+    Prevents path traversal by:
+    - rejecting filenames containing path separators / null bytes / dots
+      that would let the user escape the directory; and
+    - confirming the fully-resolved path stays inside the backups dir.
+    """
+    if not backup_filename or not _BACKUP_FILENAME_RE.fullmatch(backup_filename):
+        raise HTTPException(status_code=400, detail="Invalid backup filename")
+
+    base = _BACKUP_DIR.resolve()
+    candidate = (base / backup_filename).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid backup filename")
+    return candidate
 
 router = APIRouter()
 
@@ -211,11 +237,11 @@ def restore_backup_from_file(
 ) -> Dict[str, Any]:
     """Restore system from a backup file"""
     try:
-        # Validate backup file exists
-        backup_path = Path("data/backups") / backup_filename
+        # Validate backup file exists (with path-traversal protection)
+        backup_path = _resolve_backup_path(backup_filename)
         if not backup_path.exists():
             raise HTTPException(status_code=404, detail="Backup file not found")
-        
+
         # Perform restore
         restore_info = restore_backup(
             archive_path=backup_path,
@@ -256,13 +282,13 @@ def delete_backup_file(
 ) -> Dict[str, Any]:
     """Delete a backup file"""
     try:
-        backup_path = Path("data/backups") / backup_filename
+        backup_path = _resolve_backup_path(backup_filename)
         if not backup_path.exists():
             raise HTTPException(status_code=404, detail="Backup file not found")
-        
+
         # Get file size before deletion
         file_size_mb = backup_path.stat().st_size / (1024 * 1024)
-        
+
         # Delete the file
         backup_path.unlink()
         

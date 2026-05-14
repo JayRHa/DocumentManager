@@ -22,6 +22,38 @@ class BackupError(Exception):
     pass
 
 
+def _safe_extractall(tar: tarfile.TarFile, dest: Path) -> None:
+    """Extract a tar archive into ``dest`` while blocking path traversal.
+
+    Older Python releases (< 3.12) don't support the ``filter='data'``
+    argument to :py:meth:`tarfile.TarFile.extractall`, so we manually
+    validate each member's destination against the target directory.
+    Members whose resolved path escapes ``dest``, absolute paths, and
+    symlinks/hard-links that point outside ``dest`` are rejected.
+
+    See CVE-2007-4559 / PEP 706 for background.
+    """
+    dest_root = dest.resolve()
+    for member in tar.getmembers():
+        member_path = (dest_root / member.name).resolve()
+        try:
+            member_path.relative_to(dest_root)
+        except ValueError:
+            raise BackupError(
+                f"Refusing to extract tar member outside dest: {member.name!r}"
+            )
+        if member.issym() or member.islnk():
+            link_target = (member_path.parent / member.linkname).resolve()
+            try:
+                link_target.relative_to(dest_root)
+            except ValueError:
+                raise BackupError(
+                    f"Refusing to extract tar link outside dest: {member.name!r}"
+                    f" -> {member.linkname!r}"
+                )
+    tar.extractall(dest)
+
+
 def create_backup(
     db_session,
     backup_name: Optional[str] = None,
@@ -284,12 +316,22 @@ def restore_backup(
     
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-        
+
         try:
-            # Extract archive
+            # Extract archive. Use the 'data' extraction filter introduced
+            # in Python 3.12 (PEP 706) to block path traversal, absolute
+            # paths, symlinks pointing outside the destination, and special
+            # file types inside the tarball (CVE-2007-4559 family of bugs).
+            # We pass it as a positional/keyword argument; on Python < 3.12
+            # we fall back to a manual safety check.
             logger.info(f"Extracting backup archive: {archive_path}")
             with tarfile.open(archive_path, "r:gz") as tar:
-                tar.extractall(temp_path)
+                try:
+                    tar.extractall(temp_path, filter="data")
+                except TypeError:
+                    # Older Python without filter= support: validate members
+                    # manually before extracting to prevent path traversal.
+                    _safe_extractall(tar, temp_path)
             
             # Find extracted backup directory
             backup_dirs = list(temp_path.iterdir())
