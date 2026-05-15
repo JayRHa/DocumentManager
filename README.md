@@ -20,27 +20,46 @@ Build. Automate. Share.
 
 ## What is this?
 
-Python-based document management tool for organizing, processing, and managing files.
+Document Manager focuses on organizing, processing, and managing documents so files become searchable, structured, or easier to work with.
 
-> Browse the documentation below for setup notes, usage details, and project-specific context.
+## Project Context
 
----
+- Input usually starts with files or folders that need processing, metadata, or storage decisions.
+- The important flow is ingestion first, then normalization, then retrieval or downstream use.
+- This repository is maintained as a practical project and reference asset.
+
+## How It Works
+
+Documents enter through an upload or watched folder, are parsed and enriched with metadata, then stored so users or other systems can retrieve the processed result.
+
+```mermaid
+flowchart LR
+    Files[Files and folders] --> Ingest[Ingestion]
+    Ingest --> Process[Parsing and processing]
+    Process --> Metadata[Metadata extraction]
+    Metadata --> Store[Storage]
+    Store --> Search[Search or retrieval]
+    Search --> User[User workflow]
+```
 
 ## Quick Start
 
-1. Review the project documentation below.
+1. Review the project context and workflow below.
 2. Clone the repository:
 
    ```bash
    git clone https://github.com/JayRHa/DocumentManager.git
    ```
 
-3. Follow the setup, deployment, or usage notes in the preserved documentation section.
+3. Continue with the project-specific documentation in the next section.
 
 ---
 <!-- unified-readme:end -->
 
-## Existing Documentation
+<!-- project-documentation:start -->
+## Project Documentation
+
+The sections below contain the repository-specific setup, usage, and reference material for this project.
 
 # 📄 DocumentManager
 
