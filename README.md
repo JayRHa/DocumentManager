@@ -20,7 +20,7 @@ Build. Automate. Share.
 
 ## What is this?
 
-This repository provides python-based document management tool for organizing, processing, and managing files.
+Python-based document management tool for organizing, processing, and managing files.
 
 > Browse the documentation below for setup notes, usage details, and project-specific context.
 
@@ -138,7 +138,7 @@ The beauty of open source? You can have this running on your machine right now:
 ```bash
 # Clone the repository
 git clone https://github.com/JayRHa/DocumentManager.git
-cd Document-Manager
+cd DocumentManager
 
 # Run the setup script
 ./setup.sh prod
@@ -371,7 +371,7 @@ We love contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for 
 ```bash
 # Clone your fork
 git clone https://github.com/JayRHa/DocumentManager.git
-cd Document-Manager
+cd DocumentManager
 
 # Create branch
 git checkout -b feature/your-feature
