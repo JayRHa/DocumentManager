@@ -1,9 +1,9 @@
 <!-- unified-readme:start -->
 <div align="center">
 
-# Document Manager
+# 📄 DocumentManager
 
-**Python-based document management tool for organizing, processing, and managing files.**
+**Transform your document chaos into an AI-powered knowledge powerhouse.**
 
 Build. Automate. Share.
 
@@ -11,6 +11,13 @@ Build. Automate. Share.
 [![GitHub forks](https://img.shields.io/github/forks/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=4078c0)](https://github.com/JayRHa/DocumentManager/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=d73a4a)](https://github.com/JayRHa/DocumentManager/issues)
 [![Contributors](https://img.shields.io/github/contributors/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=28a745)](https://github.com/JayRHa/DocumentManager/graphs/contributors)
+
+![Python](https://img.shields.io/badge/Python-3.12+-blue.svg?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-00a393.svg?style=for-the-badge&logo=fastapi)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=for-the-badge&logo=docker)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+*Most document management systems feel like they're stuck in 2005. DocumentManager brings AI intelligence to understand your documents' actual content and meaning - not just their titles or tags.*
+[Features](#-features) • [Quick Start](#-quick-start) • [Demo](#-demo) • [Documentation](#-documentation) • [API](#-api) • [Contributing](#-contributing)
 
 ---
 
@@ -20,7 +27,7 @@ Build. Automate. Share.
 
 ## What is this?
 
-Document Manager focuses on organizing, processing, and managing documents so files become searchable, structured, or easier to work with.
+📄 DocumentManager focuses on organizing, processing, and managing documents so files become searchable, structured, or easier to work with.
 
 ## Project Context
 
@@ -51,34 +58,10 @@ flowchart LR
    git clone https://github.com/JayRHa/DocumentManager.git
    ```
 
-3. Continue with the project-specific documentation in the next section.
+3. Continue with the setup, usage, or workflow sections below.
 
 ---
 <!-- unified-readme:end -->
-
-<!-- project-documentation:start -->
-## Project Documentation
-
-The sections below contain the repository-specific setup, usage, and reference material for this project.
-
-# 📄 DocumentManager
-
-<div align="center">
-
-![Python](https://img.shields.io/badge/Python-3.12+-blue.svg?style=for-the-badge&logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-00a393.svg?style=for-the-badge&logo=fastapi)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=for-the-badge&logo=docker)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
-
-**Transform your document chaos into an AI-powered knowledge powerhouse**
-
-*Most document management systems feel like they're stuck in 2005. DocumentManager brings AI intelligence to understand your documents' actual content and meaning - not just their titles or tags.*
-
-[Features](#-features) • [Quick Start](#-quick-start) • [Demo](#-demo) • [Documentation](#-documentation) • [API](#-api) • [Contributing](#-contributing)
-
-</div>
-
----
 
 ## 🌟 Features
 
