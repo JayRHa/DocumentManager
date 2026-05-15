@@ -97,35 +97,35 @@ flowchart LR
 <div align="center">
 
 ### Dashboard Overview
-![Dashboard](images/dashboard-overview.png)
+![Dashboard](assets/dashboard-overview.png)
 *Clean, intuitive dashboard showing document statistics and recent activities*
 
 ### AI-Powered Search
-![AI Search](images/ai-search.jpeg)
+![AI Search](assets/ai-search.jpeg)
 *Find documents by meaning, not just keywords - ask questions in natural language*
 
 ### AI Chat
-![AI Chat](images/ai-chat.png)
+![AI Chat](assets/ai-chat.png)
 *Interactive AI chat for document analysis and knowledge extraction*
 
 ### Document Upload & Processing
-![Document Upload](images/document-upload.jpeg)
+![Document Upload](assets/document-upload.jpeg)
 *Drag-and-drop interface with automatic text extraction and AI tagging*
 
 ### Smart Tags & Organization
-![Tags Management](images/tags.png)
+![Tags Management](assets/tags.png)
 *AI auto-generates correspondents, document types, and tags - fully customizable with color coding*
 
 ### Document Viewer
-![Document Viewer](images/document-viewer.png)
+![Document Viewer](assets/document-viewer.png)
 *Built-in document viewer with search highlighting and annotations*
 
 ### User Management
-![User Management](images/user-management.jpeg)
+![User Management](assets/user-management.jpeg)
 *Enterprise-grade user and permission management*
 
 ### Settings & Configuration
-![Settings](images/settings-page.jpeg)
+![Settings](assets/settings-page.jpeg)
 *Easy configuration of AI providers and system settings*
 
 </div>
