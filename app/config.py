@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     
     # File settings
     max_file_size: str = "100MB"
-    allowed_extensions: str = "pdf,png,jpg,jpeg,tiff,bmp,txt,text"
+    allowed_extensions: str = "pdf,png,jpg,jpeg,tiff,bmp,txt,text,md,markdown"
     
     # Security
     # Do NOT ship a static, well-known default secret_key. Anything signed
@@ -188,4 +188,3 @@ def reset_settings():
     """Reset the global settings instance"""
     global _settings
     _settings = None
-

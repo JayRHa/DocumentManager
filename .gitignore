@@ -1,24 +1,13 @@
 chroma/chroma.sqlite3
 data/documents.db
-data/chroma/chroma.sqlite3
-data/chroma/9754fb82-5d93-4871-b0ee-35e06b599c9a/data_level0.bin
-data/chroma/9754fb82-5d93-4871-b0ee-35e06b599c9a/header.bin
-data/chroma/9754fb82-5d93-4871-b0ee-35e06b599c9a/length.bin
-data/chroma/9754fb82-5d93-4871-b0ee-35e06b599c9a/link_lists.bin
-data/logs/chromadb.stderr.log
-data/logs/chromadb.stdout.log
-data/logs/documentmanager.stderr.log
-data/logs/documentmanager.stdout.log
-data/logs/rag_prompts.json
-data/logs/server.log
-data/storage/ABCTelecommunications/2025-07-05/82c78671-abd3-4179-a52e-974a4cbc6b06_2025-07-05_ABC_Telecommunications_Utility Bill.pdf
-data/storage/AcmeCorporation/2025-08-07/b01a4f93-1290-464c-bd7a-679b11b39b2f_2025-08-07_Acme_Corporation_Invoice.pdf
-data/storage/BankOfCommerce/2025-05-13/bbe33f32-7da6-401c-b899-9ee736c86601_2025-05-13_Bank_of_Commerce_Receipt.pdf
-data/storage/CityWaterServices/2024-10-07/b09dbf45-aacb-4683-b512-440bd0028ce4_2024-10-07_City_Water_Services_Report.pdf
-data/storage/GlobalInsuranceLtd/2025-06-07/4b9deaf8-0797-4086-a0e8-6daf15664dd9_2025-06-07_Global_Insurance_Ltd_Statement.pdf
-data/storage/GreenEnergySolutions/2025-03-28/72a58502-2841-4a50-be84-442b7c7530f7_2025-03-28_Green_Energy_Solutions_Certificate.pdf
-data/storage/HealthCenter/2025-03-18/0b2bc35b-ad7e-40a4-ac57-6de2f52ed25e_2025-03-18_Dr._Sarah_Johnson_Letter.pdf
-data/storage/LegalAssociatesLLP/2024-09-08/4f380a04-02af-4a46-8b3d-f39bae42e9da_2024-09-08_Legal_Associates_LLP_Policy.pdf
-data/storage/PropertyManagementInc/2025-01-27/53b571aa-a79f-4be7-b867-7f0c258f39c8_2025-01-27_Property_Management_Inc_Medical Record.pdf
-data/storage/TechStartGmbH/2025-06-09/75d86917-31e1-4a2c-b5c4-3433f9841d1c_2025-06-09_TechStart_GmbH_Contract.pdf
+data/documents.db-*
+data/.local-smoke-credentials.json
+data/chroma/
+data/logs/
+data/staging/
+data/storage/
+data/uploads/
+data/backups/
+__pycache__/
+*.py[cod]
 .DS_Store
