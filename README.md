@@ -1,100 +1,46 @@
-<!-- unified-readme:start -->
+<!-- jr-brand:start -->
 <div align="center">
-
-# Document Manager
-
-**Transform your document chaos into an AI-powered knowledge powerhouse.**
-
-Build. Automate. Share.
-
-[![GitHub stars](https://img.shields.io/github/stars/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=f4c542)](https://github.com/JayRHa/DocumentManager/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=4078c0)](https://github.com/JayRHa/DocumentManager/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=d73a4a)](https://github.com/JayRHa/DocumentManager/issues)
-[![Contributors](https://img.shields.io/github/contributors/JayRHa/DocumentManager?style=for-the-badge&logo=github&color=28a745)](https://github.com/JayRHa/DocumentManager/graphs/contributors)
-
-![Python](https://img.shields.io/badge/Python-3.12+-blue.svg?style=for-the-badge&logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-00a393.svg?style=for-the-badge&logo=fastapi)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=for-the-badge&logo=docker)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
-*Most document management systems feel like they're stuck in 2005. DocumentManager brings AI intelligence to understand your documents' actual content and meaning - not just their titles or tags.*
-[Features](#-features) • [Quick Start](#-quick-start) • [Demo](#-demo) • [Documentation](#-documentation) • [API](#-api) • [Contributing](#-contributing)
-
-<p>
-  <a href="https://jannikreinhard.com/">Blog</a> ·
-  <a href="https://www.linkedin.com/in/jannik-r/">LinkedIn</a> ·
-  <a href="https://x.com/jannik_reinhard">X</a>
+  <a href="https://jannikreinhard.com/">
+    <img src="https://raw.githubusercontent.com/JayRHa/.github/main/assets/readme/tool.svg" alt="Jannik Reinhard — AI, Cloud and Endpoint Management" width="100%">
+  </a>
+  <h1>Document Manager</h1>
+  <p><strong>Python-based document management tool for organizing, processing, and managing files.</strong></p>
+  <p>
+  <a href="https://jannikreinhard.com/"><img src="https://img.shields.io/badge/Website-0A5FC0?style=flat-square&amp;logo=wordpress&amp;logoColor=white" alt="Website"></a>
+  <a href="https://github.com/JayRHa"><img src="https://img.shields.io/badge/GitHub-081427?style=flat-square&amp;logo=github&amp;logoColor=white" alt="GitHub"></a>
+  <a href="https://www.linkedin.com/in/jannik-r/"><img src="https://img.shields.io/badge/LinkedIn-0795FF?style=flat-square&amp;logo=linkedin&amp;logoColor=white" alt="LinkedIn"></a>
+  <a href="https://x.com/jannik_reinhard"><img src="https://img.shields.io/badge/X-081427?style=flat-square&amp;logo=x&amp;logoColor=white" alt="X"></a>
+  <a href="https://www.youtube.com/@ModernDevMgmt/featured"><img src="https://img.shields.io/badge/YouTube-0A5FC0?style=flat-square&amp;logo=youtube&amp;logoColor=white" alt="YouTube"></a>
 </p>
-
----
-
-`Document Management` | `Python` | `Public` | `Maintained`
-
+  <p><sub>Tool · App · CLI · Python · Practical by design</sub></p>
 </div>
+<!-- jr-brand:end -->
 
-## What is this?
+## Features
 
-Document Manager focuses on organizing, processing, and managing documents so files become searchable, structured, or easier to work with.
-
-## Project Context
-
-- Input usually starts with files or folders that need processing, metadata, or storage decisions.
-- The important flow is ingestion first, then normalization, then retrieval or downstream use.
-- This repository is maintained as a practical project and reference asset.
-
-## How It Works
-
-Documents enter through an upload or watched folder, are parsed and enriched with metadata, then stored so users or other systems can retrieve the processed result.
-
-```mermaid
-flowchart LR
-    Files[Files and folders] --> Ingest[Ingestion]
-    Ingest --> Process[Parsing and processing]
-    Process --> Metadata[Metadata extraction]
-    Metadata --> Store[Storage]
-    Store --> Search[Search or retrieval]
-    Search --> User[User workflow]
-```
-
-## Quick Start
-
-1. Review the project context and workflow below.
-2. Clone the repository:
-
-   ```bash
-   git clone https://github.com/JayRHa/DocumentManager.git
-   ```
-
-3. Continue with the setup, usage, or workflow sections below.
-
----
-<!-- unified-readme:end -->
-
-## 🌟 Features
-
-### 🤖 AI-Powered Intelligence
+### AI-Powered Intelligence
 - **Semantic Search**: Find documents by meaning, not just keywords. Search for "payment terms" and find invoicing documents, contracts with payment clauses, and financial agreements - even if they never use those exact words
 - **Smart OCR**: Extract text from scanned PDFs, photos of whiteboards, and documents in 50+ languages using Tesseract OCR
 - **Auto-Tagging**: AI automatically categorizes documents based on content - financial reports get tagged as "finance", contracts as "legal", technical specs as "engineering"
 - **Natural Language Queries**: Just ask questions like "Show me all contracts expiring this year" or "What were our Q4 marketing expenses?"
 - **AI-Generated Summaries**: Understand large documents at a glance with automatic summary generation
 
-### 🔒 Enterprise-Ready Security
+### Enterprise-Ready Security
 - **Role-Based Access Control**: Fine-grained permissions for users and groups
 - **Complete Audit Trails**: Track all document activities
 - **Privacy First**: Option to use Azure OpenAI to keep models in your own tenant
 - **Self-Hosted**: All data stays on your infrastructure - no vendor lock-in
 - **Session Management**: Secure session handling with automatic expiry
 
-### 🚀 Modern Architecture
+### Modern Architecture
 - **RESTful API**: Complete OpenAPI 3.0 documented API built with FastAPI
 - **Vector Database**: ChromaDB for lightning-fast semantic search using embeddings
 - **Flexible AI**: Choose between OpenAI or Azure OpenAI (your choice)
 - **Simple Frontend**: Vanilla JavaScript keeping it simple and fast
 - **Docker-Ready**: Deploy in minutes with included setup script
 
-## 📸 Demo
+## Demo
 
-<div align="center">
 
 ### Dashboard Overview
 ![Dashboard](assets/dashboard-overview.png)
@@ -128,9 +74,8 @@ flowchart LR
 ![Settings](assets/settings-page.jpeg)
 *Easy configuration of AI providers and system settings*
 
-</div>
 
-## 🚀 Quick Start
+## Quickstart
 
 ### Getting Started in 3 Minutes
 
@@ -141,7 +86,7 @@ The beauty of open source? You can have this running on your machine right now:
 - 4GB+ RAM recommended
 - 10GB+ free disk space
 
-### 🐳 Using Docker (Recommended)
+### Using Docker (Recommended)
 
 ```bash
 # Clone the repository
@@ -185,7 +130,7 @@ python cli.py serve
   - Tesseract: `winget install tesseract-ocr` or `choco install tesseract`
   - Poppler (for PDF OCR): `choco install poppler` or download binaries and set Settings.poppler_path to the poppler `bin` folder
 
-### 🛠️ Using the Setup Script
+### Using the Setup Script
 
 The `setup.sh` script provides an easy way to manage your DocumentManager installation:
 
@@ -209,7 +154,7 @@ The `setup.sh` script provides an easy way to manage your DocumentManager instal
 ./setup.sh stop
 ```
 
-### 💻 Local Development
+### Local Development
 
 ```bash
 # Create virtual environment
@@ -223,7 +168,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 📋 Initial Setup
+## Initial Setup
 
 1. **Create Admin Account**
    - Navigate to `http://localhost:8000`
@@ -241,7 +186,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    - AI detects: Title, Summary, Correspondent, Document Type, Document Date, Tags, and Tax Relevance
    - Use semantic search to find information instantly with natural language
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 DocumentManager/
@@ -265,7 +210,7 @@ DocumentManager/
 - **Frontend**: Vanilla JavaScript, modern CSS
 - **Deployment**: Docker, Docker Compose
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -298,7 +243,7 @@ STORAGE_TYPE=local
 STORAGE_PATH=/app/data/storage
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 ### Interactive API Docs
 Once running, access the interactive API documentation at:
@@ -345,7 +290,7 @@ response = session.post(f"{BASE_URL}/api/ai/ask", json={
 answer = response.json()["answer"]
 ```
 
-## 🌟 Why Open Source?
+## Why Open Source?
 
 Your document management system shouldn't be a black box. With DocumentManager you can:
 - **Audit the code** - Know exactly what happens to your documents
@@ -355,7 +300,7 @@ Your document management system shouldn't be a black box. With DocumentManager y
 
 No vendor lock-in. Complete transparency. Total control.
 
-## 🚀 Roadmap
+## Roadmap
 
 The foundation is solid, but we're just getting started:
 - **Self-hosted AI models** - Run everything locally
@@ -364,9 +309,9 @@ The foundation is solid, but we're just getting started:
 - **Advanced analytics** - Insights from your document repository
 - **Plugin system** - Custom integrations for your needs
 
-## 🤝 Contributing
+## Contributing
 
-We love contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We love contributions! Please see our [Contributing Guide](https://github.com/JayRHa/.github/blob/main/CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -389,16 +334,24 @@ pip install pre-commit
 pre-commit install
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
-
-<div align="center">
 Built with ❤️ by Jannik Reinhard and Fabian Peschke
 
 ⭐ Star the repo if you find it useful — it really helps with motivation!
 
 ☕ If you want to support the project, you can [buy us a coffee](https://www.buymeacoffee.com/your-link)
+
+<!-- jr-brand-footer:start -->
+
+---
+
+<div align="center">
+  <p><sub>Built and maintained by <a href="https://jannikreinhard.com/">Jannik Reinhard</a> · Microsoft MVP for Security and AI Platform.</sub></p>
+  <p><a href="https://www.buymeacoffee.com/jannikreinf">Support the open-source work</a></p>
+  <p><strong>Stay healthy, Cheers Jannik</strong></p>
 </div>
+
+<!-- jr-brand-footer:end -->
