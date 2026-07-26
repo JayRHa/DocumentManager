@@ -19,7 +19,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install test dependencies
-        run: pip install fastapi pydantic-settings sqlalchemy loguru pytest
+        run: pip install fastapi pydantic-settings sqlalchemy loguru watchdog pytest
       - name: Run regression tests
         run: python -m pytest tests -q
       - name: Parse PowerShell scripts

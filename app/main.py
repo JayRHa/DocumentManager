@@ -154,33 +154,19 @@ async def startup_event():
     async def start_file_watcher():
         await asyncio.sleep(3)  # Wait for database initialization
         try:
-            from .services.file_watcher import FileWatcherHandler
-            from .services.document_processor import DocumentProcessor
-            from watchdog.observers import Observer
-            
-            db = SessionLocal()
-            try:
-                settings = get_settings(db)
-                staging_path = Path(settings.staging_folder)
-                
-                # Ensure staging folder exists
-                staging_path.mkdir(parents=True, exist_ok=True)
-                
-                # Create document processor and file watcher
-                processor = DocumentProcessor(db)
-                event_handler = FileWatcherHandler(processor, settings, db)
-                
-                # Set up observer
-                global file_watcher
-                file_watcher = Observer()
-                file_watcher.schedule(event_handler, str(staging_path), recursive=False)
-                file_watcher.start()
-                
-                print(f"📁 File watcher started monitoring: {staging_path}")
-                
-            finally:
-                db.close()
-                
+            from .services.file_watcher import FileWatcher
+
+            watcher = FileWatcher()
+            # FileWatcher.start also recovers files that arrived before the
+            # observer was ready. Run the initial scan off the event loop
+            # because OCR can be CPU intensive.
+            await asyncio.to_thread(watcher.start)
+            if not watcher.is_running:
+                raise RuntimeError("File watcher did not start")
+
+            global file_watcher
+            file_watcher = watcher
+            print(f"📁 File watcher started monitoring: {watcher.settings.staging_folder}")
         except Exception as e:
             print(f"⚠️  Could not start file watcher: {e}")
     
