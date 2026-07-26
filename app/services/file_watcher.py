@@ -14,8 +14,7 @@ from .document_processor import DocumentProcessor
 class FileWatcherHandler(FileSystemEventHandler):
     """Handler for file system events"""
     
-    def __init__(self, processor: DocumentProcessor, settings, db: Session = None):
-        self.processor = processor
+    def __init__(self, settings):
         self.settings = settings
         # Track recently processed files to prevent duplicates
         self._recent_files = defaultdict(datetime)
@@ -59,10 +58,13 @@ class FileWatcherHandler(FileSystemEventHandler):
         
         logger.info(f"New file detected: {file_path.name}")
         
-        # Process the file in background
+        # Create the processor with the same live session used for this job.
+        # Keeping a startup-time processor leaked closed SQLAlchemy sessions
+        # into later AI/settings operations.
         try:
             with SessionLocal() as db:
-                result = self.processor.process_file(file_path, db)
+                processor = DocumentProcessor(db)
+                result = processor.process_file(file_path, db)
                 if result:
                     logger.info(f"Successfully processed file: {file_path.name}")
                 else:
@@ -90,7 +92,6 @@ class FileWatcher:
     def __init__(self, db: Session = None):
         self.settings = None
         self.observer = Observer()
-        self.processor = None
         self.is_running = False
         self._initialized = False
     
@@ -100,7 +101,6 @@ class FileWatcher:
             try:
                 with SessionLocal() as db:
                     self.settings = get_settings(db)
-                    self.processor = DocumentProcessor(db)
                 self._initialized = True
             except Exception as e:
                 logger.error(f"Failed to initialize file watcher: {e}")
@@ -115,7 +115,7 @@ class FileWatcher:
             logger.warning(f"Staging folder does not exist: {staging_path}")
             return
         
-        handler = FileWatcherHandler(self.processor, self.settings)
+        handler = FileWatcherHandler(self.settings)
         self.observer.schedule(handler, str(staging_path), recursive=False)
         
         try:
@@ -157,7 +157,8 @@ class FileWatcher:
                         
                         try:
                             with SessionLocal() as db:
-                                self.processor.process_file(file_path, db)
+                                processor = DocumentProcessor(db)
+                                processor.process_file(file_path, db)
                         except Exception as e:
                             logger.error(f"Failed to process existing file {file_path.name}: {e}")
         
