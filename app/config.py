@@ -24,13 +24,6 @@ class Settings(BaseSettings):
     azure_openai_chat_deployment: str = ""
     azure_openai_embeddings_deployment: str = ""
     
-    def __init__(self, **kwargs):
-        # Don't use any values from kwargs that might come from env vars
-        # Only use explicitly passed values (which should be none for base Settings)
-        # Filter out any kwargs that might come from env vars
-        filtered_kwargs = {k: v for k, v in kwargs.items() if not k.startswith('NEVER_MATCH_THIS_PREFIX_')}
-        super().__init__(**filtered_kwargs)
-    
     # ChromaDB
     chroma_host: str = "localhost"
     chroma_port: int = 8001
@@ -61,7 +54,10 @@ class Settings(BaseSettings):
     jwt_secret_key: Optional[str] = None  # JWT secret key for authentication
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    environment: str = "development"
     production_mode: bool = False  # Set to True in production for secure cookies
+    cors_origins: str = "http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000"
+    trusted_proxy_ips: str = "127.0.0.1,::1"
     
     # Logging
     log_level: str = "INFO"
@@ -73,21 +69,31 @@ class Settings(BaseSettings):
     ai_max_retries: int = 2  # Maximum number of retries for failed AI requests
     
     model_config = SettingsConfigDict(
-        # No env_file - all settings come from database or defaults
+        # Runtime values may be supplied by Docker/Kubernetes environment
+        # variables. Database-backed settings still override these defaults.
         case_sensitive=False,
-        # Explicitly disable reading from environment variables
         env_file=None,
-        # Don't read from environment variables at all
-        # This ensures settings only come from database or defaults
         env_ignore_empty=True,
-        # This is the key setting to disable env vars completely
-        # By setting a prefix that will never match, we prevent env var loading
-        env_prefix="NEVER_MATCH_THIS_PREFIX_"
+        env_prefix=""
     )
+
+    def model_post_init(self, __context: Any) -> None:
+        # Keep the existing ENVIRONMENT=production setup contract while still
+        # allowing an explicit PRODUCTION_MODE value to override it.
+        if "production_mode" not in self.model_fields_set:
+            self.production_mode = self.environment.lower() == "production"
 
     @property
     def allowed_extensions_list(self) -> list:
         return [ext.strip().lower() for ext in self.allowed_extensions.split(",")]
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def trusted_proxy_ips_list(self) -> list[str]:
+        return [ip.strip() for ip in self.trusted_proxy_ips.split(",") if ip.strip()]
     
     @property
     def max_file_size_bytes(self) -> int:
@@ -107,8 +113,8 @@ class DatabaseSettings(Settings):
     """Settings that loads configuration from database"""
     
     def __init__(self, db: Session = None, **kwargs):
-        # First, load defaults WITHOUT environment variables
-        # We pass _env_file=None to ensure no env vars are loaded
+        # Load defaults and runtime environment variables first. Persisted
+        # application settings take precedence when a database is available.
         super().__init__(_env_file=None, **kwargs)
         
         # Then override with database values if available
@@ -188,4 +194,3 @@ def reset_settings():
     """Reset the global settings instance"""
     global _settings
     _settings = None
-

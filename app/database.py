@@ -3,9 +3,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from loguru import logger
 import os
+from .config import get_settings
 
-# Use simple SQLite database with default path
-DATABASE_URL = "sqlite:///./data/documents.db"
+# Honour the documented DATABASE_URL runtime setting.
+DATABASE_URL = get_settings().database_url
 
 # Ensure data directory exists
 os.makedirs("data", exist_ok=True)
@@ -13,7 +14,7 @@ os.makedirs("data", exist_ok=True)
 # Create engine with minimal configuration
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 )
 
 # Create session factory

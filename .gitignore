@@ -22,3 +22,7 @@ data/storage/LegalAssociatesLLP/2024-09-08/4f380a04-02af-4a46-8b3d-f39bae42e9da_
 data/storage/PropertyManagementInc/2025-01-27/53b571aa-a79f-4be7-b867-7f0c258f39c8_2025-01-27_Property_Management_Inc_Medical Record.pdf
 data/storage/TechStartGmbH/2025-06-09/75d86917-31e1-4a2c-b5c4-3433f9841d1c_2025-06-09_TechStart_GmbH_Contract.pdf
 .DS_Store
+# Python bytecode and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
