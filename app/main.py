@@ -29,10 +29,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app_settings = get_settings()
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000", "http://127.0.0.1:8000"],  # Restrict origins
+    allow_origins=app_settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],  # Restrict headers
@@ -43,9 +45,6 @@ app.add_exception_handler(HTTPException, ErrorHandler.http_exception_handler)
 app.add_exception_handler(RequestValidationError, ErrorHandler.validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException, ErrorHandler.starlette_exception_handler)
 app.add_exception_handler(Exception, ErrorHandler.general_exception_handler)
-
-# Get settings to determine production mode
-app_settings = get_settings()
 
 # Enable CSRF protection
 csrf_protect = CSRFProtect(
@@ -71,7 +70,8 @@ rate_limit = RateLimitProtect(
     default_limit=100,  # 100 requests per minute for general endpoints
     window_seconds=60,
     login_limit=5,  # 5 login attempts per 5 minutes
-    login_window_seconds=300
+    login_window_seconds=300,
+    trusted_proxy_ips=app_settings.trusted_proxy_ips_list,
 )
 rate_limit.init_app(app)
 

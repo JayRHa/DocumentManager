@@ -90,7 +90,8 @@ ENV PYTHONUNBUFFERED=1 \
     # Application settings (should be overridden in production)
     DATABASE_URL=sqlite:///./data/documents.db \
     SECRET_KEY=MUST-BE-SET-IN-PRODUCTION \
-    AI_PROVIDER=openai
+    AI_PROVIDER=openai \
+    TRUSTED_PROXY_IPS=127.0.0.1
 
 # Add metadata labels
 LABEL maintainer="Document Manager Team" \

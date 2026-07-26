@@ -2,7 +2,7 @@
 Rate limiting middleware for FastAPI to prevent brute force attacks and API abuse.
 """
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 from collections import defaultdict
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -29,7 +29,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         window_seconds: int = 60,  # 1 minute window
         login_limit: int = 5,  # stricter limit for login attempts
         login_window_seconds: int = 300,  # 5 minute window for login
-        cleanup_interval: int = 300  # cleanup every 5 minutes
+        cleanup_interval: int = 300,  # cleanup every 5 minutes
+        trusted_proxy_ips: Optional[Iterable[str]] = None,
     ):
         super().__init__(app)
         self.default_limit = default_limit
@@ -37,6 +38,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.login_limit = login_limit
         self.login_window_seconds = login_window_seconds
         self.cleanup_interval = cleanup_interval
+        self.trusted_proxy_ips = set(trusted_proxy_ips or ())
         
         # Store request counts: {ip: {endpoint: [(timestamp, count)]}}
         self.request_counts: Dict[str, Dict[str, list]] = defaultdict(lambda: defaultdict(list))
@@ -81,19 +83,21 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     def get_client_ip(self, request: Request) -> str:
         """Extract client IP address from request."""
-        # Check for proxy headers
-        forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
-            # Take the first IP in the chain
-            return forwarded_for.split(",")[0].strip()
-        
-        # Check for other proxy headers
-        real_ip = request.headers.get("X-Real-IP")
-        if real_ip:
-            return real_ip
-        
-        # Fallback to direct connection
-        return request.client.host if request.client else "unknown"
+        direct_ip = request.client.host if request.client else "unknown"
+
+        # Forwarding headers are attacker-controlled unless the direct peer is
+        # a configured reverse proxy. Never let an arbitrary client choose the
+        # rate-limit bucket used for its request.
+        if direct_ip in self.trusted_proxy_ips:
+            forwarded_for = request.headers.get("X-Forwarded-For")
+            if forwarded_for:
+                return forwarded_for.split(",")[0].strip()
+
+            real_ip = request.headers.get("X-Real-IP")
+            if real_ip:
+                return real_ip.strip()
+
+        return direct_ip
     
     def get_rate_limit(self, path: str) -> Tuple[int, int]:
         """Get rate limit for a specific path."""

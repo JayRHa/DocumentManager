@@ -32,11 +32,18 @@ function Require-Docker() {
 function New-EnvFile() {
   if (-not (Test-Path .env)) {
     Info 'Creating .env file...'
-    $secret = try { python - <<'PY'
-import secrets
-print(secrets.token_urlsafe(32))
-PY
-    } catch { 'change-me-in-production' }
+    $secret = 'change-me-in-production'
+    $pythonCommand = Get-Command python3, python -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pythonCommand) {
+      try {
+        $generatedSecret = & $pythonCommand.Source -c 'import secrets; print(secrets.token_urlsafe(32))'
+        if ($LASTEXITCODE -eq 0 -and $generatedSecret) {
+          $secret = $generatedSecret.Trim()
+        }
+      } catch {
+        Warn 'Could not generate a random secret with Python; update SECRET_KEY manually.'
+      }
+    }
 
     @"
 # Security - CHANGE THIS IN PRODUCTION!
@@ -94,22 +101,23 @@ function Invoke-Prod() {
     exit 1
   }
 
-  $env = Get-Content .env | Where-Object { $_ -notmatch '^#' -and $_.Trim() }
-  foreach ($line in $env) {
+  $envValues = @{}
+  $envLines = Get-Content .env | Where-Object { $_ -notmatch '^#' -and $_.Trim() }
+  foreach ($line in $envLines) {
     $kv = $line.Split('=',2)
-    if ($kv.Length -eq 2) { $env:$($kv[0]) = $kv[1] }
+    if ($kv.Length -eq 2) { $envValues[$kv[0].Trim()] = $kv[1] }
   }
 
   $pwdPath = (Get-Location).Path
   docker run -d `
     --name "$ContainerName" `
     -p 8000:8000 `
-    -e SECRET_KEY="$env:SECRET_KEY" `
-    -e DATABASE_URL="$env:DATABASE_URL" `
-    -e AI_PROVIDER="$env:AI_PROVIDER" `
-    -e OPENAI_API_KEY="$env:OPENAI_API_KEY" `
-    -e ENVIRONMENT="$env:ENVIRONMENT" `
-    -e LOG_LEVEL="$env:LOG_LEVEL" `
+    -e "SECRET_KEY=$($envValues['SECRET_KEY'])" `
+    -e "DATABASE_URL=$($envValues['DATABASE_URL'])" `
+    -e "AI_PROVIDER=$($envValues['AI_PROVIDER'])" `
+    -e "OPENAI_API_KEY=$($envValues['OPENAI_API_KEY'])" `
+    -e "ENVIRONMENT=$($envValues['ENVIRONMENT'])" `
+    -e "LOG_LEVEL=$($envValues['LOG_LEVEL'])" `
     -v "$pwdPath/data:/app/data" `
     -v "$pwdPath/staging:/app/staging" `
     -v "$pwdPath/storage:/app/storage" `
@@ -176,4 +184,3 @@ Examples:
 "@
   }
 }
-

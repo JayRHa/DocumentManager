@@ -4,7 +4,7 @@ from loguru import logger
 
 # Configure loguru to write logs to the logs directory
 log_dir = Path(__file__).parent.parent / "data" / "logs"
-log_dir.mkdir(exist_ok=True)
+log_dir.mkdir(parents=True, exist_ok=True)
 
 # Remove default logger
 logger.remove()
