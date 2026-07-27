@@ -176,7 +176,7 @@ class OCRService:
                 return self.extract_text_from_pdf(file_path)
             elif file_extension in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
                 return self.extract_text_from_image(file_path)
-            elif file_extension in ['.txt', '.text']:
+            elif file_extension in ['.txt', '.text', '.md', '.markdown']:
                 return self.extract_text_from_text_file(file_path)
             else:
                 raise ValueError(f"Unsupported file type: {file_extension}")

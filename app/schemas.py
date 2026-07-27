@@ -257,7 +257,7 @@ class ExtendedSettingsResponse(BaseModel):
     
     # File Settings
     max_file_size: str = "100MB"
-    allowed_extensions: str = "pdf,png,jpg,jpeg,tiff,bmp,txt,text"
+    allowed_extensions: str = "pdf,png,jpg,jpeg,tiff,bmp,txt,text,md,markdown"
     
     # Security Settings
     secret_key: str = "your-secret-key-change-in-production"

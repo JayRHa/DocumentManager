@@ -22,8 +22,7 @@ COPY requirements.txt .
 
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir chromadb
+    pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime image
 FROM python:3.12-slim AS runtime

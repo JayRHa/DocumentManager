@@ -241,7 +241,11 @@ class DocumentProcessor:
                 '.jpg': 'image/jpeg',
                 '.jpeg': 'image/jpeg',
                 '.tiff': 'image/tiff',
-                '.bmp': 'image/bmp'
+                '.bmp': 'image/bmp',
+                '.txt': 'text/plain',
+                '.text': 'text/plain',
+                '.md': 'text/markdown',
+                '.markdown': 'text/markdown',
             }
             return ext_to_mime.get(file_path.suffix.lower(), 'application/octet-stream')
     

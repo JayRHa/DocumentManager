@@ -39,7 +39,7 @@ class FileTypeNotAllowedError(FileSecurityError):
 ALLOWED_EXTENSIONS = {
     '.pdf', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif',
     '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
-    '.txt', '.csv', '.rtf', '.odt', '.ods', '.odp'
+    '.txt', '.md', '.markdown', '.csv', '.rtf', '.odt', '.ods', '.odp'
 }
 
 ALLOWED_MIME_TYPES = {
@@ -48,7 +48,7 @@ ALLOWED_MIME_TYPES = {
     'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'text/plain', 'text/csv', 'application/rtf',
+    'text/plain', 'text/markdown', 'text/csv', 'application/rtf',
     'application/vnd.oasis.opendocument.text',
     'application/vnd.oasis.opendocument.spreadsheet',
     'application/vnd.oasis.opendocument.presentation'
@@ -185,6 +185,7 @@ def validate_file_upload(
             allowed_mismatches = [
                 ('application/octet-stream', 'application/pdf'),
                 ('text/plain', 'text/csv'),
+                ('text/plain', 'text/markdown'),
             ]
             if (detected_mime, expected_mime) not in allowed_mismatches:
                 logger.warning(

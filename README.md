@@ -97,16 +97,31 @@ cd DocumentManager
 ./setup.sh prod
 
 # Or manually with Docker
-docker build -t documentmanager .
+docker build -t documentmanager:local .
 docker run -d \
-  --name documentmanager \
-  -p 8000:8000 \
+  --name documentmanager-local \
+  -p 127.0.0.1:8000:8000 \
   -v $(pwd)/data:/app/data \
-  -v $(pwd)/storage:/app/storage \
-  documentmanager
+  documentmanager:local
 ```
 
 The application will be available at `http://localhost:8000`
+
+To verify a local Docker install with real sample documents, run:
+
+```bash
+python3 scripts/local_smoke_test.py \
+  --base-url http://127.0.0.1:8000 \
+  --data-dir data \
+  --sample-dir ~/projects/comedy/docs
+```
+
+The smoke test creates or reuses a local development admin account, stores the
+generated local credentials in ignored runtime state under `data/`, stages a
+small Markdown/text sample set, waits for OCR/text extraction, then verifies
+authenticated document listing and full-text search. If you run it against an
+existing database with different admin credentials, set `DM_SMOKE_USERNAME` and
+`DM_SMOKE_PASSWORD` for an existing admin.
 
 ### Windows Notes
 
@@ -236,7 +251,7 @@ OPENAI_API_KEY=sk-...
 ENVIRONMENT=production
 LOG_LEVEL=INFO
 MAX_UPLOAD_SIZE=104857600  # 100MB
-ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png,txt,doc,docx
+ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png,txt,md,markdown,doc,docx
 
 # Storage
 STORAGE_TYPE=local
