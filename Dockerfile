@@ -45,8 +45,6 @@ RUN apt-get update && apt-get install -y \
     libmagic1 \
     # Health check
     curl \
-    # Process management for all-in-one mode
-    supervisor \
     # Clean up
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -66,15 +64,11 @@ WORKDIR /app
 COPY --chown=appuser:appuser app/ ./app/
 COPY --chown=appuser:appuser frontend/ ./frontend/
 COPY --chown=appuser:appuser docker-entrypoint.sh ./
-COPY --chown=appuser:appuser docker-entrypoint-aio.sh ./
-COPY --chown=appuser:appuser supervisord.conf /etc/supervisor/conf.d/
 
 # Create necessary directories with correct permissions
-RUN mkdir -p data data/logs data/staging data/storage data/uploads backups chroma && \
-    chmod +x docker-entrypoint.sh docker-entrypoint-aio.sh && \
-    chown -R appuser:appuser /app && \
-    mkdir -p /var/log/supervisor && \
-    chown -R appuser:appuser /var/log/supervisor
+RUN mkdir -p data/logs data/staging data/storage data/uploads data/backups && \
+    chmod +x docker-entrypoint.sh && \
+    chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
@@ -86,17 +80,16 @@ ENV PYTHONUNBUFFERED=1 \
     # Tesseract and Poppler paths
     TESSERACT_PATH=/usr/bin/tesseract \
     POPPLER_PATH=/usr/bin \
-    # Application settings (should be overridden in production)
+    # Application settings
     DATABASE_URL=sqlite:///./data/documents.db \
-    SECRET_KEY=MUST-BE-SET-IN-PRODUCTION \
     AI_PROVIDER=openai \
     TRUSTED_PROXY_IPS=127.0.0.1
 
 # Add metadata labels
-LABEL maintainer="Document Manager Team" \
+LABEL maintainer="Jannik Reinhard" \
       version="1.0.0" \
       description="AI-powered document management system" \
-      org.opencontainers.image.source="https://github.com/yourusername/documentmanager"
+      org.opencontainers.image.source="https://github.com/JayRHa/DocumentManager"
 
 # Expose application port
 EXPOSE 8000

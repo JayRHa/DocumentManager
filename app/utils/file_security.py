@@ -87,8 +87,8 @@ def check_file_permissions(file_path: Path, user: User) -> bool:
     # Check if file is in allowed directories
     settings = get_settings()
     allowed_dirs = [
-        Path(settings.get('storage_path', 'data/storage')),
-        Path(settings.get('staging_path', 'data/staging'))
+        Path(settings.storage_folder),
+        Path(settings.staging_folder),
     ]
     
     try:

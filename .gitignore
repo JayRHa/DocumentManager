@@ -1,17 +1,26 @@
-chroma/chroma.sqlite3
-data/documents.db
-data/documents.db-*
-data/.local-smoke-credentials.json
-data/chroma/
-data/logs/
-data/staging/
-data/storage/
-data/uploads/
-data/backups/
-__pycache__/
-*.py[cod]
-.DS_Store
+# Local credentials and environments
+.env
+.venv/
+venv/
+
+# Runtime data
+/backups/
+/chroma/
+/data/
+/logs/
+/staging/
+/storage/
+/uploads/
+.local-smoke-credentials.json
+
 # Python bytecode and test caches
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

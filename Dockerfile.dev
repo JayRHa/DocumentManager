@@ -17,8 +17,6 @@ RUN apt-get update && apt-get install -y \
     libmagic1 libmagic-dev \
     # Health check
     curl \
-    # Process management
-    supervisor \
     # Development tools
     vim nano htop \
     && apt-get clean \
@@ -29,20 +27,17 @@ WORKDIR /app
 
 # Copy requirements and install Python packages
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir chromadb watchdog
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ ./app/
 COPY frontend/ ./frontend/
 COPY cli.py ./
 COPY docker-entrypoint.sh ./
-COPY docker-entrypoint-aio.sh ./
-COPY supervisord.conf /etc/supervisor/conf.d/
 
 # Create necessary directories
-RUN mkdir -p data data/logs data/staging data/storage data/uploads backups chroma /var/log/supervisor && \
-    chmod +x docker-entrypoint.sh docker-entrypoint-aio.sh
+RUN mkdir -p data/logs data/staging data/storage data/uploads data/backups && \
+    chmod +x docker-entrypoint.sh
 
 # Development environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -51,7 +46,6 @@ ENV PYTHONUNBUFFERED=1 \
     ENVIRONMENT=development \
     LOG_LEVEL=DEBUG \
     DATABASE_URL=sqlite:///./data/documents.db \
-    SECRET_KEY=dev-secret-key-only-for-development \
     TESSERACT_PATH=/usr/bin/tesseract \
     POPPLER_PATH=/usr/bin
 

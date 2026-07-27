@@ -16,6 +16,10 @@
 </div>
 <!-- jr-brand:end -->
 
+> **Canonical repository:** This repository supersedes the legacy
+> `JayRHa/DocumentManagement` project and contains the maintained application,
+> runtime configuration, tests, and deployment path.
+
 ## Features
 
 ### AI-Powered Intelligence
@@ -93,15 +97,20 @@ The beauty of open source? You can have this running on your machine right now:
 git clone https://github.com/JayRHa/DocumentManager.git
 cd DocumentManager
 
-# Run the setup script
+# Build and run with a generated local .env file
+./setup.sh build
 ./setup.sh prod
 
 # Or manually with Docker
 docker build -t documentmanager:local .
+cp .env.example .env
+# Set a strong SECRET_KEY and optional AI credentials in .env first.
 docker run -d \
   --name documentmanager-local \
   -p 127.0.0.1:8000:8000 \
+  --env-file .env \
   -v $(pwd)/data:/app/data \
+  -v $(pwd)/backups:/app/data/backups \
   documentmanager:local
 ```
 
@@ -205,15 +214,16 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 ```
 DocumentManager/
-├── app/                    # Backend FastAPI application
-│   ├── api/               # REST API endpoints
-│   ├── core/              # Core business logic
-│   ├── models/            # SQLAlchemy models
-│   └── services/          # AI, OCR, and storage services
-├── frontend/              # Vanilla JS frontend
-├── docker/                # Docker configuration
-├── tests/                 # Test suite
-└── docs/                  # Documentation
+├── app/                    # FastAPI backend
+│   ├── middleware/        # Authentication, CSRF, rate limiting, logging
+│   ├── routers/           # REST API endpoints
+│   ├── services/          # AI, OCR, search, and document processing
+│   └── utils/             # Backup, validation, and file security
+├── frontend/              # Vanilla JavaScript frontend
+├── tests/                 # Regression tests
+├── Dockerfile             # Production container
+├── Dockerfile.dev         # Development container
+└── setup.sh / setup.ps1   # Runtime helpers
 ```
 
 ### Technology Stack
@@ -221,23 +231,30 @@ DocumentManager/
 - **Backend**: FastAPI, SQLAlchemy, Pydantic
 - **AI/ML**: OpenAI GPT-4, Azure OpenAI, ChromaDB
 - **OCR**: Tesseract (50+ languages)
-- **Database**: SQLite (default), PostgreSQL (production)
+- **Database**: SQLite
 - **Frontend**: Vanilla JavaScript, modern CSS
-- **Deployment**: Docker, Docker Compose
+- **Deployment**: Docker or Podman
 
 ## Configuration
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+Copy `.env.example` to `.env`. The setup script does this automatically and
+generates a strong `SECRET_KEY` when `.env` does not exist.
 
 ```bash
-# Security - CHANGE IN PRODUCTION!
-SECRET_KEY=your-secret-key-here
+cp .env.example .env
+python -c 'import secrets; print(secrets.token_urlsafe(32))'
+```
+
+Place the generated value in `SECRET_KEY` and configure the required provider:
+
+```dotenv
+SECRET_KEY=replace-with-generated-value
+ENVIRONMENT=production
 
 # Database
 DATABASE_URL=sqlite:///./data/documents.db
-# For PostgreSQL: postgresql://user:pass@localhost/dbname
 
 # AI Provider
 AI_PROVIDER=openai
@@ -245,17 +262,14 @@ OPENAI_API_KEY=sk-...
 # Or for Azure:
 # AI_PROVIDER=azure
 # AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
-# AZURE_OPENAI_KEY=your-key
+# AZURE_OPENAI_API_KEY=your-key
+# AZURE_OPENAI_CHAT_DEPLOYMENT=your-chat-deployment
+# AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT=your-embedding-deployment
 
 # Application Settings
-ENVIRONMENT=production
 LOG_LEVEL=INFO
-MAX_UPLOAD_SIZE=104857600  # 100MB
-ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png,txt,md,markdown,doc,docx
-
-# Storage
-STORAGE_TYPE=local
-STORAGE_PATH=/app/data/storage
+MAX_FILE_SIZE=100MB
+ALLOWED_EXTENSIONS=pdf,png,jpg,jpeg,tiff,bmp,txt,text,md,markdown
 ```
 
 ## API Documentation

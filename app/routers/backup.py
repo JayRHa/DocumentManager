@@ -48,7 +48,7 @@ class BackupConfigRequest(BaseModel):
     interval_hours: int = 24
     max_backups: int = 7
     include_files: bool = True
-    backup_path: str = "backups"
+    backup_path: str = "data/backups"
 
 
 class ManualBackupRequest(BaseModel):

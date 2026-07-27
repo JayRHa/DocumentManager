@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     data_folder: str = "./data"
     storage_folder: str = "./data/storage"
     logs_folder: str = "./data/logs"
+    backup_folder: str = "./data/backups"
     
     # OCR
     tesseract_path: str = "/usr/bin/tesseract"

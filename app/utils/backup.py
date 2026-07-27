@@ -13,7 +13,7 @@ import tempfile
 from loguru import logger
 
 from ..database import engine
-from ..config import get_settings
+from ..config import Settings, get_settings
 from ..models import User
 
 
@@ -28,8 +28,9 @@ def _extract_tar_safely(tar: tarfile.TarFile, dest: Path) -> None:
     Older Python releases (< 3.12) don't support the ``filter='data'``
     argument to :py:meth:`tarfile.TarFile.extractall`, so we manually
     validate each member's destination against the target directory.
-    Members whose resolved path escapes ``dest``, absolute paths, and
-    symlinks/hard-links that point outside ``dest`` are rejected.
+    Members whose resolved path escapes ``dest``, links, and special files are
+    rejected. Backup archives only need regular files and directories, so
+    accepting links would add an unnecessary extraction attack surface.
 
     See CVE-2007-4559 / PEP 706 for background.
     """
@@ -44,16 +45,9 @@ def _extract_tar_safely(tar: tarfile.TarFile, dest: Path) -> None:
                 f"Refusing to extract tar member outside dest: {member.name!r}"
             )
         if member.issym() or member.islnk():
-            link_target = (member_path.parent / member.linkname).resolve()
-            try:
-                link_target.relative_to(dest_root)
-            except ValueError:
-                raise BackupError(
-                    f"Refusing to extract tar link outside dest: {member.name!r}"
-                    f" -> {member.linkname!r}"
-                )
-        elif not (member.isfile() or member.isdir()):
-            raise BackupError(f"Refusing to extract unsupported tar member: {member.name!r}")
+            raise BackupError(f"Refusing to extract tar link: {member.name!r}")
+        if not (member.isfile() or member.isdir()):
+            raise BackupError(f"Refusing to extract special tar member: {member.name!r}")
 
     for member in members:
         tar.extract(member, dest)
@@ -84,8 +78,8 @@ def create_backup(
     backup_name = backup_name or f"backup_{timestamp}"
     
     # Create backup directory
-    backup_base = Path(settings.get('backup_path', 'data/backups'))
-    backup_base.mkdir(exist_ok=True)
+    backup_base = Path(settings.backup_folder)
+    backup_base.mkdir(parents=True, exist_ok=True)
     backup_dir = backup_base / backup_name
     backup_dir.mkdir(exist_ok=True)
     
@@ -119,8 +113,8 @@ def create_backup(
             'database_engine': str(engine.url).split('://')[0],
             'include_files': include_files,
             'settings': {
-                'storage_folder': settings.get('storage_folder'),
-                'staging_folder': settings.get('staging_folder'),
+                'storage_folder': settings.storage_folder,
+                'staging_folder': settings.staging_folder,
             },
             'statistics': get_backup_statistics(db_session)
         }
@@ -239,7 +233,7 @@ def backup_database(backup_dir: Path) -> Path:
         raise BackupError(f"Unsupported database type: {db_url.split('://')[0]}")
 
 
-def backup_files(backup_dir: Path, settings: Dict[str, Any]) -> Path:
+def backup_files(backup_dir: Path, settings: Settings) -> Path:
     """
     Backup document files to the specified directory.
     
@@ -251,17 +245,17 @@ def backup_files(backup_dir: Path, settings: Dict[str, Any]) -> Path:
         Path to the files backup
     """
     files_backup_dir = backup_dir / 'files'
-    files_backup_dir.mkdir(exist_ok=True)
+    files_backup_dir.mkdir(parents=True, exist_ok=True)
     
     # Backup storage folder
-    storage_path = Path(settings.get('storage_folder', 'data/storage'))
+    storage_path = Path(settings.storage_folder)
     if storage_path.exists():
         storage_backup = files_backup_dir / 'storage'
         shutil.copytree(storage_path, storage_backup, dirs_exist_ok=True)
         logger.info(f"Backed up storage folder: {storage_path}")
     
     # Backup staging folder (optional)
-    staging_path = Path(settings.get('staging_folder', 'data/staging'))
+    staging_path = Path(settings.staging_folder)
     if staging_path.exists():
         staging_backup = files_backup_dir / 'staging'
         shutil.copytree(staging_path, staging_backup, dirs_exist_ok=True)
@@ -323,8 +317,8 @@ def restore_backup(
         temp_path = Path(temp_dir)
 
         try:
-            # Extract archive through the same validation path on every
-            # supported Python version to avoid CVE-2007-4559 style traversal.
+            # Use the same strict validation on every supported Python version
+            # to block CVE-2007-4559 style traversal and link attacks.
             logger.info(f"Extracting backup archive: {archive_path}")
             with tarfile.open(archive_path, "r:gz") as tar:
                 _extract_tar_safely(tar, temp_path)
@@ -448,7 +442,7 @@ def restore_files_from_backup(backup_dir: Path, db_session):
     # Restore storage folder
     storage_backup = files_backup_dir / 'storage'
     if storage_backup.exists():
-        storage_path = Path(settings.get('storage_folder', 'data/storage'))
+        storage_path = Path(settings.storage_folder)
         
         # Backup current files
         if storage_path.exists():
@@ -464,7 +458,7 @@ def restore_files_from_backup(backup_dir: Path, db_session):
     # Restore staging folder
     staging_backup = files_backup_dir / 'staging'
     if staging_backup.exists():
-        staging_path = Path(settings.get('staging_folder', 'data/staging'))
+        staging_path = Path(settings.staging_folder)
         
         # Clear current staging
         if staging_path.exists():

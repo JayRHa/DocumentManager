@@ -56,6 +56,20 @@ db.close()
 
 echo "✅ Initialization complete"
 
-# Always run in all-in-one mode with embedded ChromaDB
-echo "🔄 Starting in all-in-one mode with embedded ChromaDB..."
-exec /app/docker-entrypoint-aio.sh
+# ChromaDB is opened directly through its persistent client. Running a second
+# Chroma server in this container would duplicate storage and waste resources.
+echo "🔄 Starting Document Manager with embedded persistent ChromaDB..."
+
+uvicorn_args=(
+    app.main:app
+    --host 0.0.0.0
+    --port 8000
+    --proxy-headers
+    --forwarded-allow-ips "${TRUSTED_PROXY_IPS:-127.0.0.1}"
+)
+
+if [ "${ENVIRONMENT:-production}" = "development" ]; then
+    uvicorn_args+=(--reload)
+fi
+
+exec python -m uvicorn "${uvicorn_args[@]}"
