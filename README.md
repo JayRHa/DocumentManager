@@ -1,7 +1,7 @@
 <!-- jr-brand:start -->
 <div align="center">
   <a href="https://jannikreinhard.com/">
-    <img src="https://raw.githubusercontent.com/JayRHa/.github/main/assets/readme/tool.svg" alt="Jannik Reinhard — Driving AI with passion" width="100%">
+    <img src="https://raw.githubusercontent.com/JayRHa/.github/main/assets/readme/brand-header.png" alt="Jannik Reinhard — Driving AI with passion" width="100%">
   </a>
   <h1>Document Manager</h1>
   <p><strong>Python-based document management tool for organizing, processing, and managing files.</strong></p>
